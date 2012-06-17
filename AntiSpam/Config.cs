@@ -11,6 +11,7 @@ namespace AntiSpam
     {
         public int ChatSpamThreshold = 5;
         public int ChatSpamTime = 5;
+        public bool DisableBossMessages = false;
         public static Action<Config> ConfigRead;
 
         public void Write(string path)

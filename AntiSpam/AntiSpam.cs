@@ -49,6 +49,7 @@ namespace AntiSpam
             {
                 ServerHooks.Chat -= OnChat;
                 ServerHooks.Join -= OnJoin;
+                NetHooks.SendData -= OnSendData;
                 GameHooks.Update -= OnUpdate;
             }
         }
@@ -56,6 +57,7 @@ namespace AntiSpam
         {
             ServerHooks.Chat += OnChat;
             ServerHooks.Join += OnJoin;
+            NetHooks.SendData += OnSendData;
             GameHooks.Update += OnUpdate;
 
             if (File.Exists(Path.Combine(TShock.SavePath, "antispamconfig.json")))
@@ -68,7 +70,7 @@ namespace AntiSpam
         void OnChat(messageBuffer msg, int plr, string text, HandledEventArgs e)
         {
             if (!e.Handled && (!text.StartsWith("/") || text.StartsWith("/whisper ") || text.StartsWith("/tell ") ||
-                text.StartsWith("/w ") || text.StartsWith("/reply ") || text.StartsWith("/r"))
+                text.StartsWith("/w ") || text.StartsWith("/reply ") || text.StartsWith("/r")))
             {
                 SpamPoints[plr]++;
                 if (text.IsUpper())
@@ -102,6 +104,13 @@ namespace AntiSpam
                 LastChat[plr] = "";
                 Seconds[plr] = 0;
                 SpamPoints[plr] = 0;
+            }
+        }
+        void OnSendData(SendDataEventArgs e)
+        {
+            if (e.MsgID == PacketTypes.ChatText && !e.Handled && e.number == 255 && e.number2 == 175 && e.number3 == 75 && Config.DisableBossMessages)
+            {
+                e.Handled = true;
             }
         }
         void OnUpdate()
