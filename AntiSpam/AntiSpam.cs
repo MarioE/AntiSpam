@@ -69,8 +69,7 @@ namespace AntiSpam
 
         void OnChat(messageBuffer msg, int plr, string text, HandledEventArgs e)
         {
-            if (!e.Handled && (!text.StartsWith("/") || text.StartsWith("/whisper ") || text.StartsWith("/tell ") ||
-                text.StartsWith("/w ") || text.StartsWith("/reply ") || text.StartsWith("/r")))
+            if (!e.Handled && !text.StartsWith("/"))
             {
                 SpamPoints[plr]++;
                 if (text.IsUpper())
