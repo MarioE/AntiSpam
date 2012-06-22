@@ -47,18 +47,18 @@ namespace AntiSpam
         {
             if (disposing)
             {
-                ServerHooks.Chat -= OnChat;
-                ServerHooks.Join -= OnJoin;
                 NetHooks.SendData -= OnSendData;
                 GameHooks.Update -= OnUpdate;
+                ServerHooks.Chat -= OnChat;
+                ServerHooks.Leave -= OnLeave;
             }
         }
         public override void Initialize()
         {
-            ServerHooks.Chat += OnChat;
-            ServerHooks.Join += OnJoin;
             NetHooks.SendData += OnSendData;
             GameHooks.Update += OnUpdate;
+            ServerHooks.Chat += OnChat;
+            ServerHooks.Leave += OnLeave;
 
             if (File.Exists(Path.Combine(TShock.SavePath, "antispamconfig.json")))
             {
@@ -96,14 +96,11 @@ namespace AntiSpam
                 LastChat[plr] = text;
             }
         }
-        void OnJoin(int plr, HandledEventArgs e)
+        void OnLeave(int plr)
         {
-            if (!e.Handled)
-            {
-                LastChat[plr] = "";
-                Seconds[plr] = 0;
-                SpamPoints[plr] = 0;
-            }
+            LastChat[plr] = "";
+            Seconds[plr] = 0;
+            SpamPoints[plr] = 0;
         }
         void OnSendData(SendDataEventArgs e)
         {
