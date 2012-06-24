@@ -98,6 +98,7 @@ namespace AntiSpam
                             break;
                         case "kick":
                             TShock.Utils.ForceKick(TShock.Players[plr], "Spamming");
+                            e.Handled = true;
                             break;
                     }
                 }
