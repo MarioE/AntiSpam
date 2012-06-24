@@ -30,7 +30,7 @@ namespace AntiSpam
                     charsFound.Add(char.ToUpper(c));
                 }
             }
-            return charsFound.Count;
+            return charsFound.Count / 2;
         }
         public static double UpperCount(this string str)
         {
