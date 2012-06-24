@@ -86,7 +86,7 @@ namespace AntiSpam
                 {
                     Spam[plr]++;
                 }
-                if ((double)text.GetUnique() / text.Length < 5)
+                if ((double)text.GetUnique() / text.Length < 0.5)
                 {
                     Spam[plr]++;
                 }
