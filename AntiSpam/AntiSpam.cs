@@ -23,14 +23,12 @@ namespace AntiSpam
         {
             get { return "Prevents spamming."; }
         }
-        public string[] LastChat = new string[256];
-        public DateTime LastCheck = DateTime.Now;
         public override string Name
         {
             get { return "AntiSpam"; }
         }
-        public int[] Seconds = new int[256];
-        public int[] SpamPoints = new int[256];
+        public DateTime[] Time = new DateTime[256];
+        public int[] Spam = new int[256];
         public override Version Version
         {
             get { return Assembly.GetExecutingAssembly().GetName().Version; }
@@ -48,7 +46,6 @@ namespace AntiSpam
             if (disposing)
             {
                 NetHooks.SendData -= OnSendData;
-                GameHooks.Update -= OnUpdate;
                 ServerHooks.Chat -= OnChat;
                 ServerHooks.Leave -= OnLeave;
             }
@@ -56,7 +53,6 @@ namespace AntiSpam
         public override void Initialize()
         {
             NetHooks.SendData += OnSendData;
-            GameHooks.Update += OnUpdate;
             ServerHooks.Chat += OnChat;
             ServerHooks.Leave += OnLeave;
 
@@ -71,57 +67,54 @@ namespace AntiSpam
         {
             if (!e.Handled && !text.StartsWith("/"))
             {
-                SpamPoints[plr]++;
-                if (text.IsUpper())
+                if ((DateTime.Now - Time[plr]).TotalSeconds > Config.Time)
                 {
-                    SpamPoints[plr]++;
+                    Spam[plr] = 0;
+                    Time[plr] = DateTime.Now;
                 }
-                else if (text.Length <= 3)
+
+                Spam[plr]++;
+                if (text.UpperCount() > Config.CapsRatio)
                 {
-                    SpamPoints[plr]++;
+                    Spam[plr]++;
                 }
-                else if (LastChat[plr] == text)
+                if (text.Trim().Length <= 3)
                 {
-                    SpamPoints[plr]++;
+                    Spam[plr]++;
                 }
-                if (SpamPoints[plr] > Config.ChatSpamThreshold && !TShock.Players[plr].Group.HasPermission("ignorechatspam"))
+                else if (text.GetCount('!') > 4 || text.GetCount('?') > 4)
                 {
-                    TShock.Players[plr].SendMessage("You have been ignored for spamming.", Color.Red);
-                    e.Handled = true;
+                    Spam[plr]++;
                 }
-                else
+                if (Spam[plr] > Config.Threshold && !TShock.Players[plr].Group.HasPermission("ignorechatspam"))
                 {
-                    Seconds[plr] = 0;
+                    switch (Config.Action)
+                    {
+                        case "ignore":
+                        default:
+                            Time[plr] = DateTime.Now;
+                            TShock.Players[plr].SendMessage("You have been ignored for spamming.", Color.Red);
+                            e.Handled = true;
+                            break;
+                        case "kick":
+                            TShock.Utils.ForceKick(TShock.Players[plr], "Spamming");
+                            break;
+                    }
                 }
-                LastChat[plr] = text;
             }
         }
         void OnLeave(int plr)
         {
-            LastChat[plr] = "";
-            Seconds[plr] = 0;
-            SpamPoints[plr] = 0;
+            Spam[plr] = 0;
+            Time[plr] = DateTime.Now;
         }
         void OnSendData(SendDataEventArgs e)
         {
-            if (e.MsgID == PacketTypes.ChatText && !e.Handled && e.number == 255 && e.number2 == 175 && e.number3 == 75 && Config.DisableBossMessages)
+            if (e.MsgID == PacketTypes.ChatText && !e.Handled)
             {
-                e.Handled = true;
-            }
-        }
-        void OnUpdate()
-        {
-            if ((DateTime.Now - LastCheck).TotalSeconds >= 1)
-            {
-                LastCheck = DateTime.Now;
-                for (int i = 0; i < 256; i++)
+                if (e.number == 255 && e.number2 == 175 && e.number3 == 75 && Config.DisableBossMessages)
                 {
-                    Seconds[i]++;
-                    if (Seconds[i] > Config.ChatSpamTime)
-                    {
-                        SpamPoints[i] = 0;
-                        Seconds[i] = 0;
-                    }
+                    e.Handled = true;
                 }
             }
         }

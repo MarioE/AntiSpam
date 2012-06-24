@@ -7,16 +7,35 @@ namespace AntiSpam
 {
     public static class Extensions
     {
-        public static bool IsUpper(this string str)
+        public static int GetCount(this string str, char c)
         {
-            foreach (char c in str)
+            int charCount = 0;
+            foreach (char chr in str)
             {
-                if (!char.IsUpper(c) && !char.IsLetter(c))
+                if (chr == c)
                 {
-                    return false;
+                    charCount++;
                 }
             }
-            return true;
+            return charCount;
+        }
+
+        public static double UpperCount(this string str)
+        {
+            double capsCount = 0;
+            double charCount = 0;
+            foreach (char c in str)
+            {
+                if (char.IsLetter(c))
+                {
+                    charCount++;
+                    if (char.IsUpper(c))
+                    {
+                        capsCount++;
+                    }
+                }
+            }
+            return capsCount / charCount;
         }
     }
 }

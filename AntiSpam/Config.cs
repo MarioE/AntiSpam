@@ -9,10 +9,11 @@ namespace AntiSpam
 {
     public class Config
     {
-        public int ChatSpamThreshold = 5;
-        public int ChatSpamTime = 5;
+        public string Action = "ignore";
+        public double CapsRatio = 0.66;
         public bool DisableBossMessages = false;
-        public static Action<Config> ConfigRead;
+        public int Threshold = 5;
+        public int Time = 5;
 
         public void Write(string path)
         {
@@ -45,12 +46,7 @@ namespace AntiSpam
         {
             using (var sr = new StreamReader(stream))
             {
-                var cf = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
-                if (ConfigRead != null)
-                {
-                    ConfigRead(cf);
-                }
-                return cf;
+                return JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
             }
         }
     }
