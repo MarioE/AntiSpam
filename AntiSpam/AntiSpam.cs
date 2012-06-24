@@ -86,6 +86,11 @@ namespace AntiSpam
                 {
                     Spam[plr]++;
                 }
+                if ((double)text.GetUnique() / text.Length < 5)
+                {
+                    Spam[plr]++;
+                }
+
                 if (Spam[plr] > Config.Threshold && !TShock.Players[plr].Group.HasPermission("ignorechatspam"))
                 {
                     switch (Config.Action)

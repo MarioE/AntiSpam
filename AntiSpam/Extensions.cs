@@ -19,7 +19,19 @@ namespace AntiSpam
             }
             return charCount;
         }
-
+        public static int GetUnique(this string str)
+        {
+            List<char> charsFound = new List<char>();
+            foreach (char c in str)
+            {
+                if (char.IsLetter(c) && !charsFound.Contains(c))
+                {
+                    charsFound.Add(c);
+                    charsFound.Add(char.ToUpper(c));
+                }
+            }
+            return charsFound.Count;
+        }
         public static double UpperCount(this string str)
         {
             double capsCount = 0;
