@@ -28,7 +28,7 @@ namespace AntiSpam
             get { return "AntiSpam"; }
         }
         public DateTime[] Time = new DateTime[256];
-        public int[] Spam = new int[256];
+        public double[] Spam = new double[256];
         public override Version Version
         {
             get { return Assembly.GetExecutingAssembly().GetName().Version; }
@@ -69,26 +69,23 @@ namespace AntiSpam
             {
                 if ((DateTime.Now - Time[plr]).TotalSeconds > Config.Time)
                 {
-                    Spam[plr] = 0;
+                    Spam[plr] = 0.0;
                     Time[plr] = DateTime.Now;
                 }
 
                 Spam[plr]++;
-                if (text.UpperCount() > Config.CapsRatio)
+                if (text.Trim().Length <= 5)
                 {
-                    Spam[plr]++;
+                    Spam[plr] += 0.5;
                 }
-                if (text.Trim().Length <= 3)
+                if (text.UpperCount() >= Config.CapsRatio)
                 {
-                    Spam[plr]++;
+                    Spam[plr] += 0.5;
                 }
-                else if (text.GetCount('!') > 4 || text.GetCount('?') > 4)
+                double uniqueRatio = (double)text.GetUnique() / text.Length;
+                if (uniqueRatio <= 0.20 || uniqueRatio >= 0.80)
                 {
-                    Spam[plr]++;
-                }
-                if ((double)text.GetUnique() / text.Length < 0.33)
-                {
-                    Spam[plr]++;
+                    Spam[plr] += 0.5;
                 }
 
                 if (Spam[plr] > Config.Threshold && !TShock.Players[plr].Group.HasPermission("ignorechatspam"))
@@ -111,7 +108,7 @@ namespace AntiSpam
         }
         void OnLeave(int plr)
         {
-            Spam[plr] = 0;
+            Spam[plr] = 0.0;
             Time[plr] = DateTime.Now;
         }
         void OnSendData(SendDataEventArgs e)
