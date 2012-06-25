@@ -74,16 +74,16 @@ namespace AntiSpam
                 }
 
                 Spam[plr]++;
+                double uniqueRatio = (double)text.GetUnique() / text.Length;
                 if (text.Trim().Length <= 5)
                 {
                     Spam[plr] += 0.5;
                 }
-                if (text.UpperCount() >= Config.CapsRatio)
+                else if (uniqueRatio <= 0.20 || uniqueRatio >= 0.80)
                 {
                     Spam[plr] += 0.5;
                 }
-                double uniqueRatio = (double)text.GetUnique() / text.Length;
-                if (uniqueRatio <= 0.20 || uniqueRatio >= 0.80)
+                if (text.UpperCount() >= Config.CapsRatio)
                 {
                     Spam[plr] += 0.5;
                 }
