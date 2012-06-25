@@ -75,7 +75,7 @@ namespace AntiSpam
 
                 Spam[plr]++;
                 double uniqueRatio = (double)text.GetUnique() / text.Length;
-                if (text.Trim().Length <= 5)
+                if (text.Trim().Length <= Config.ShortLength)
                 {
                     Spam[plr] += 0.5;
                 }
