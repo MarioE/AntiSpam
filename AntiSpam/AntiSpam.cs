@@ -65,8 +65,30 @@ namespace AntiSpam
 
         void OnChat(messageBuffer msg, int plr, string text, HandledEventArgs e)
         {
-            if (!e.Handled && !text.StartsWith("/"))
+            if (!e.Handled)
             {
+                if (text.StartsWith("/"))
+                {
+                    string[] arr = text.Split(' ');
+                    if (text.StartsWith("/me ") && TShock.Players[plr].Group.HasPermission(Permissions.cantalkinthird))
+                    {
+                        text = text.Substring(4);
+                    }
+                    else if ((text.StartsWith("/tell") || text.StartsWith("/w ") || text.StartsWith("/whisper")) &&
+                        TShock.Players[plr].Group.HasPermission(Permissions.whisper))
+                    {
+                        text = text.Substring(arr[0].Length + arr[1].Length + 2);
+                    }
+                    else if ((text.StartsWith("/r ") || text.StartsWith("/reply ")) &&
+                        TShock.Players[plr].Group.HasPermission(Permissions.whisper))
+                    {
+                        text = text.Substring(arr[0].Length + 1);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
                 if ((DateTime.Now - Time[plr]).TotalSeconds > Config.Time)
                 {
                     Spam[plr] = 0.0;
