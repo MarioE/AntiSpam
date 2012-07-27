@@ -12,6 +12,7 @@ namespace AntiSpam
         public string Action = "ignore";
         public double CapsRatio = 0.66;
         public bool DisableBossMessages = false;
+        public bool DisableOrbMessages = false;
         public int ShortLength = 6;
         public double Threshold = 5.0;
         public int Time = 5;

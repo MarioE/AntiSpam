@@ -18,11 +18,12 @@ namespace AntiSpam
         {
             get { return "MarioE"; }
         }
-        public Config Config;
+        public Config Config = new Config();
         public override string Description
         {
             get { return "Prevents spamming."; }
         }
+        public bool DisableDeathMsg;
         public override string Name
         {
             get { return "AntiSpam"; }
@@ -37,8 +38,7 @@ namespace AntiSpam
         public AntiSpam(Main game)
             : base(game)
         {
-            Config = new Config();
-            Order = 0;
+            Order = -1;
         }
 
         protected override void Dispose(bool disposing)
@@ -137,9 +137,23 @@ namespace AntiSpam
         {
             if (e.MsgID == PacketTypes.ChatText && !e.Handled)
             {
-                if (e.number == 255 && e.number2 == 175 && e.number3 == 75 && Config.DisableBossMessages)
+                if (Config.DisableBossMessages && e.number2 == 175 && e.number3 == 75 && e.number4 == 255)
                 {
-                    e.Handled = true;
+                    if (e.text.StartsWith("Eye of Cthulhu") || e.text.StartsWith("Eater of Worlds") ||
+                        e.text.StartsWith("Skeletron") || e.text.StartsWith("King Slime") ||
+                        e.text.StartsWith("The Destroyer") || e.text.StartsWith("The Twins") ||
+                        e.text.StartsWith("Skeletron Prime"))
+                    {
+                        e.Handled = true;
+                    }
+                }
+                if (Config.DisableOrbMessages && e.number2 == 50 && e.number3 == 255 && e.number4 == 130)
+                {
+                    if (e.text == "A horrible chill goes down your spine..." ||
+                        e.text == "Screams echo around you...")
+                    {
+                        e.Handled = true;
+                    }
                 }
             }
         }
