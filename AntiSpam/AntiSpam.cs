@@ -37,7 +37,7 @@ namespace AntiSpam
 		public AntiSpam(Main game)
 			: base(game)
 		{
-			Order = -1;
+			Order = -1000000;
 		}
 
 		protected override void Dispose(bool disposing)
