@@ -44,6 +44,7 @@ namespace AntiSpam
 		{
 			if (disposing)
 			{
+				GameHooks.Initialize -= OnInitialize;
 				NetHooks.SendData -= OnSendData;
 				ServerHooks.Chat -= OnChat;
 				ServerHooks.Leave -= OnLeave;
@@ -51,16 +52,10 @@ namespace AntiSpam
 		}
 		public override void Initialize()
 		{
+			GameHooks.Initialize += OnInitialize;
 			NetHooks.SendData += OnSendData;
 			ServerHooks.Chat += OnChat;
 			ServerHooks.Leave += OnLeave;
-
-			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
-			if (File.Exists(path))
-			{
-				Config = Config.Read(path);
-			}
-			Config.Write(path);
 		}
 
 		void OnChat(messageBuffer msg, int plr, string text, HandledEventArgs e)
@@ -110,7 +105,7 @@ namespace AntiSpam
 					Spam[plr] += 0.5;
 				}
 
-				if (Spam[plr] > Config.Threshold && !TShock.Players[plr].Group.HasPermission("ignorechatspam"))
+				if (Spam[plr] > Config.Threshold && !TShock.Players[plr].Group.HasPermission("antispam.ignore"))
 				{
 					switch (Config.Action)
 					{
@@ -127,6 +122,17 @@ namespace AntiSpam
 					}
 				}
 			}
+		}
+		void OnInitialize()
+		{
+			Commands.ChatCommands.Add(new Command("antispam.reload", Reload, "asreload"));
+
+			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
+			if (File.Exists(path))
+			{
+				Config = Config.Read(path);
+			}
+			Config.Write(path);
 		}
 		void OnLeave(int plr)
 		{
@@ -156,6 +162,17 @@ namespace AntiSpam
 					}
 				}
 			}
+		}
+
+		void Reload(CommandArgs e)
+		{
+			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
+			if (File.Exists(path))
+			{
+				Config = Config.Read(path);
+			}
+			Config.Write(path);
+			e.Player.SendMessage("Reloaded antispam config.", Color.Green);
 		}
 	}
 }
