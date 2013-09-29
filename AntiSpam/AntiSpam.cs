@@ -79,10 +79,10 @@ namespace AntiSpam
 					{
 						text = text.Substring(arr[0].Length + 1);
 					}
-                    else if (text.Trim().Length == 1)
-                    {
-                        text = "/"; // Eliminates spamming with just "/"
-                    }
+					else if (text.Trim().Length == 1)
+					{
+						text = "/"; // Eliminates spamming with just "/"
+					}
                     else
                     {
                         return;
