@@ -116,7 +116,7 @@ namespace AntiSpam
 						case "ignore":
 						default:
 							Time[plr] = DateTime.Now;
-							TShock.Players[plr].SendMessage("You have been ignored for spamming.", Color.Red);
+							TShock.Players[plr].SendErrorMessage("You have been ignored for spamming.");
 							e.Handled = true;
 							break;
 						case "kick":
