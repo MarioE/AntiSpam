@@ -5,13 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Hooks;
 using Terraria;
+using TerrariaApi.Server;
 using TShockAPI;
 
 namespace AntiSpam
 {
-	[APIVersion(1, 12)]
+	[ApiVersion(1, 14)]
 	public class AntiSpam : TerrariaPlugin
 	{
 		public override string Author
@@ -37,49 +37,50 @@ namespace AntiSpam
 		public AntiSpam(Main game)
 			: base(game)
 		{
-			Order = -1000000;
+			Order = 1000000;
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
-				GameHooks.Initialize -= OnInitialize;
-				NetHooks.SendData -= OnSendData;
-				ServerHooks.Chat -= OnChat;
-				ServerHooks.Leave -= OnLeave;
+				ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
+				ServerApi.Hooks.NetSendData.Deregister(this, OnSendData);
+				ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
+				ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
 			}
 		}
 		public override void Initialize()
 		{
-			GameHooks.Initialize += OnInitialize;
-			NetHooks.SendData += OnSendData;
-			ServerHooks.Chat += OnChat;
-			ServerHooks.Leave += OnLeave;
+			ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+			ServerApi.Hooks.NetSendData.Register(this, OnSendData);
+			ServerApi.Hooks.ServerChat.Register(this, OnChat);
+			ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
 		}
 
-		void OnChat(messageBuffer msg, int plr, string text, HandledEventArgs e)
+		void OnChat(ServerChatEventArgs e)
 		{
 			if (!e.Handled)
 			{
-				if (text.StartsWith("/"))
+				string text = e.Text;
+				if (e.Text.StartsWith("/"))
 				{
-					string[] arr = text.Split(' ');
-					if (text.StartsWith("/me ") && TShock.Players[plr].Group.HasPermission(Permissions.cantalkinthird))
+					string[] arr = e.Text.Split(' ');
+					if (e.Text.StartsWith("/me ") && TShock.Players[e.Who].Group.HasPermission(Permissions.cantalkinthird))
 					{
-						text = text.Substring(4);
+						text = e.Text.Substring(4);
 					}
-					else if ((text.StartsWith("/tell") || text.StartsWith("/w ") || text.StartsWith("/whisper")) &&
-						TShock.Players[plr].Group.HasPermission(Permissions.whisper))
+					else if ((e.Text.StartsWith("/tell") || e.Text.StartsWith("/w ") || e.Text.StartsWith("/whisper")) &&
+						TShock.Players[e.Who].Group.HasPermission(Permissions.whisper))
 					{
-						text = text.Substring(arr[0].Length + arr[1].Length + 2);
+						text = e.Text.Substring(arr[0].Length + arr[1].Length + 2);
 					}
-					else if ((text.StartsWith("/r ") || text.StartsWith("/reply ")) &&
-						TShock.Players[plr].Group.HasPermission(Permissions.whisper))
+					else if ((e.Text.StartsWith("/r ") || e.Text.StartsWith("/reply ")) &&
+						TShock.Players[e.Who].Group.HasPermission(Permissions.whisper))
 					{
-						text = text.Substring(arr[0].Length + 1);
+						text = e.Text.Substring(arr[0].Length + 1);
 					}
-					else if (text.Trim().Length == 1)
+					else if (e.Text.Trim().Length == 1)
 					{
 						text = "/"; // Eliminates spamming with just "/"
 					}
@@ -88,46 +89,46 @@ namespace AntiSpam
                         return;
                     }
 				}
-				if ((DateTime.Now - Time[plr]).TotalSeconds > Config.Time)
+				if ((DateTime.Now - Time[e.Who]).TotalSeconds > Config.Time)
 				{
-					Spam[plr] = 0.0;
-					Time[plr] = DateTime.Now;
+					Spam[e.Who] = 0.0;
+					Time[e.Who] = DateTime.Now;
 				}
 
-				Spam[plr]++;
+				Spam[e.Who]++;
 				double uniqueRatio = (double)text.GetUnique() / text.Length;
 				if (text.Trim().Length <= Config.ShortLength)
 				{
-					Spam[plr] += 0.5;
+					Spam[e.Who] += 0.5;
 				}
 				else if (uniqueRatio <= 0.20 || uniqueRatio >= 0.80)
 				{
-					Spam[plr] += 0.5;
+					Spam[e.Who] += 0.5;
 				}
 				if (text.UpperCount() >= Config.CapsRatio)
 				{
-					Spam[plr] += 0.5;
+					Spam[e.Who] += 0.5;
 				}
 
-				if (Spam[plr] > Config.Threshold && !TShock.Players[plr].Group.HasPermission("antispam.ignore"))
+				if (Spam[e.Who] > Config.Threshold && !TShock.Players[e.Who].Group.HasPermission("antispam.ignore"))
 				{
 					switch (Config.Action)
 					{
 						case "ignore":
 						default:
-							Time[plr] = DateTime.Now;
-							TShock.Players[plr].SendErrorMessage("You have been ignored for spamming.");
+							Time[e.Who] = DateTime.Now;
+							TShock.Players[e.Who].SendErrorMessage("You have been ignored for spamming.");
 							e.Handled = true;
 							break;
 						case "kick":
-							TShock.Utils.ForceKick(TShock.Players[plr], "Spamming");
+							TShock.Utils.ForceKick(TShock.Players[e.Who], "Spamming");
 							e.Handled = true;
 							break;
 					}
 				}
 			}
 		}
-		void OnInitialize()
+		void OnInitialize(EventArgs e)
 		{
 			Commands.ChatCommands.Add(new Command("antispam.reload", Reload, "asreload"));
 
@@ -138,14 +139,14 @@ namespace AntiSpam
 			}
 			Config.Write(path);
 		}
-		void OnLeave(int plr)
+		void OnLeave(LeaveEventArgs e)
 		{
-			Spam[plr] = 0.0;
-			Time[plr] = DateTime.Now;
+			Spam[e.Who] = 0.0;
+			Time[e.Who] = DateTime.Now;
 		}
 		void OnSendData(SendDataEventArgs e)
 		{
-			if (e.MsgID == PacketTypes.ChatText && !e.Handled)
+			if (e.MsgId == PacketTypes.ChatText && !e.Handled)
 			{
 				if (Config.DisableBossMessages && e.number2 == 175 && e.number3 == 75 && e.number4 == 255)
 				{
@@ -176,7 +177,7 @@ namespace AntiSpam
 				Config = Config.Read(path);
 			}
 			Config.Write(path);
-			e.Player.SendMessage("Reloaded antispam config.", Color.Green);
+			e.Player.SendSuccessMessage("Reloaded antispam config.");
 		}
 	}
 }
