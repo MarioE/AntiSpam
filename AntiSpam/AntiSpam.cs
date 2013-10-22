@@ -70,7 +70,7 @@ namespace AntiSpam
 					{
 						text = e.Text.Substring(4);
 					}
-					else if ((e.Text.StartsWith("/tell") || e.Text.StartsWith("/w ") || e.Text.StartsWith("/whisper")) &&
+					else if ((e.Text.StartsWith("/tell ") || e.Text.StartsWith("/w ") || e.Text.StartsWith("/whisper ")) &&
 						TShock.Players[e.Who].Group.HasPermission(Permissions.whisper))
 					{
 						text = e.Text.Substring(arr[0].Length + arr[1].Length + 2);
