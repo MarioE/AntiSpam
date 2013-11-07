@@ -153,7 +153,8 @@ namespace AntiSpam
 					if (e.text.StartsWith("Eye of Cthulhu") || e.text.StartsWith("Eater of Worlds") ||
 						e.text.StartsWith("Skeletron") || e.text.StartsWith("King Slime") ||
 						e.text.StartsWith("The Destroyer") || e.text.StartsWith("The Twins") ||
-						e.text.StartsWith("Skeletron Prime") || e.text.StartsWith("Wall of Flesh"))
+						e.text.StartsWith("Skeletron Prime") || e.text.StartsWith("Wall of Flesh") ||
+						e.text.StartsWith("Plantera") || e.text.StartsWith("Golem"))
 					{
 						e.Handled = true;
 					}
