@@ -154,7 +154,8 @@ namespace AntiSpam
 						e.text.StartsWith("Skeletron") || e.text.StartsWith("King Slime") ||
 						e.text.StartsWith("The Destroyer") || e.text.StartsWith("The Twins") ||
 						e.text.StartsWith("Skeletron Prime") || e.text.StartsWith("Wall of Flesh") ||
-						e.text.StartsWith("Plantera") || e.text.StartsWith("Golem") || e.text.StartsWith("Brain of Cthulhu"))
+						e.text.StartsWith("Plantera") || e.text.StartsWith("Golem") || e.text.StartsWith("Brain of Cthulhu") ||
+						e.text.StartsWith("Queen Bee"))
 					{
 						e.Handled = true;
 					}
