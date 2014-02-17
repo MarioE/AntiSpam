@@ -11,14 +11,17 @@ using TShockAPI;
 
 namespace AntiSpam
 {
-	[ApiVersion(1, 14)]
+	[ApiVersion(1, 15)]
 	public class AntiSpam : TerrariaPlugin
 	{
+		Config Config = new Config();
+		DateTime[] Times = new DateTime[256];
+		double[] Spams = new double[256];
+
 		public override string Author
 		{
 			get { return "MarioE"; }
 		}
-		private Config Config = new Config();
 		public override string Description
 		{
 			get { return "Prevents spamming."; }
@@ -27,8 +30,6 @@ namespace AntiSpam
 		{
 			get { return "AntiSpam"; }
 		}
-		private DateTime[] Time = new DateTime[256];
-		private double[] Spam = new double[256];
 		public override Version Version
 		{
 			get { return Assembly.GetExecutingAssembly().GetName().Version; }
@@ -67,9 +68,7 @@ namespace AntiSpam
 				{
 					string[] arr = e.Text.Split(' ');
 					if (e.Text.StartsWith("/me ") && TShock.Players[e.Who].Group.HasPermission(Permissions.cantalkinthird))
-					{
 						text = e.Text.Substring(4);
-					}
 					else if ((e.Text.StartsWith("/tell ") || e.Text.StartsWith("/w ") || e.Text.StartsWith("/whisper ")) &&
 						TShock.Players[e.Who].Group.HasPermission(Permissions.whisper) && (arr.Length > 1 && !String.IsNullOrWhiteSpace(arr[1])))
 					{
@@ -81,42 +80,32 @@ namespace AntiSpam
 						text = e.Text.Substring(arr[0].Length + 1);
 					}
 					else if (e.Text.Trim().Length == 1)
-					{
-						text = "/"; // Eliminates spamming with just "/"
-					}
+						text = "/";
                     else
-                    {
                         return;
-                    }
 				}
-				if ((DateTime.Now - Time[e.Who]).TotalSeconds > Config.Time)
+				if ((DateTime.Now - Times[e.Who]).TotalSeconds > Config.Time)
 				{
-					Spam[e.Who] = 0.0;
-					Time[e.Who] = DateTime.Now;
+					Spams[e.Who] = 0.0;
+					Times[e.Who] = DateTime.Now;
 				}
 
-				Spam[e.Who]++;
+				Spams[e.Who]++;
 				double uniqueRatio = (double)text.GetUnique() / text.Length;
 				if (text.Trim().Length <= Config.ShortLength)
-				{
-					Spam[e.Who] += 0.5;
-				}
+					Spams[e.Who] += 0.5;
 				else if (uniqueRatio <= 0.20 || uniqueRatio >= 0.80)
-				{
-					Spam[e.Who] += 0.5;
-				}
+					Spams[e.Who] += 0.5;
 				if (text.UpperCount() >= Config.CapsRatio)
-				{
-					Spam[e.Who] += 0.5;
-				}
+					Spams[e.Who] += 0.5;
 
-				if (Spam[e.Who] > Config.Threshold && !TShock.Players[e.Who].Group.HasPermission("antispam.ignore"))
+				if (Spams[e.Who] > Config.Threshold && !TShock.Players[e.Who].Group.HasPermission("antispam.ignore"))
 				{
 					switch (Config.Action)
 					{
 						case "ignore":
 						default:
-							Time[e.Who] = DateTime.Now;
+							Times[e.Who] = DateTime.Now;
 							TShock.Players[e.Who].SendErrorMessage("You have been ignored for spamming.");
 							e.Handled = true;
 							break;
@@ -134,15 +123,13 @@ namespace AntiSpam
 
 			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
 			if (File.Exists(path))
-			{
 				Config = Config.Read(path);
-			}
 			Config.Write(path);
 		}
 		void OnLeave(LeaveEventArgs e)
 		{
-			Spam[e.Who] = 0.0;
-			Time[e.Who] = DateTime.Now;
+			Spams[e.Who] = 0.0;
+			Times[e.Who] = DateTime.Now;
 		}
 		void OnSendData(SendDataEventArgs e)
 		{
@@ -175,9 +162,7 @@ namespace AntiSpam
 		{
 			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
 			if (File.Exists(path))
-			{
 				Config = Config.Read(path);
-			}
 			Config.Write(path);
 			e.Player.SendSuccessMessage("Reloaded antispam config.");
 		}
