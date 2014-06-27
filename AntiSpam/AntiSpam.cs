@@ -8,6 +8,7 @@ using System.Text;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
+using TShockAPI.Hooks;
 
 namespace AntiSpam
 {
@@ -49,6 +50,7 @@ namespace AntiSpam
 				ServerApi.Hooks.NetSendData.Deregister(this, OnSendData);
 				ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
 				ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
+				PlayerHooks.PlayerCommand -= OnPlayerCommand;
 			}
 		}
 		public override void Initialize()
@@ -57,6 +59,7 @@ namespace AntiSpam
 			ServerApi.Hooks.NetSendData.Register(this, OnSendData);
 			ServerApi.Hooks.ServerChat.Register(this, OnChat);
 			ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
+			PlayerHooks.PlayerCommand += OnPlayerCommand;
 		}
 
 		void OnChat(ServerChatEventArgs e)
@@ -64,55 +67,34 @@ namespace AntiSpam
 			if (!e.Handled)
 			{
 				string text = e.Text;
-				if (e.Text.StartsWith("/"))
-				{
-					string[] arr = e.Text.Split(' ');
-					if (e.Text.StartsWith("/me ") && TShock.Players[e.Who].Group.HasPermission(Permissions.cantalkinthird))
-						text = e.Text.Substring(4);
-					else if ((e.Text.StartsWith("/tell ") || e.Text.StartsWith("/w ") || e.Text.StartsWith("/whisper ")) &&
-						TShock.Players[e.Who].Group.HasPermission(Permissions.whisper) && (arr.Length > 1 && !String.IsNullOrWhiteSpace(arr[1])))
-					{
-						text = e.Text.Substring(arr[0].Length + arr[1].Length + 2);
-					}
-					else if ((e.Text.StartsWith("/r ") || e.Text.StartsWith("/reply ")) &&
-						TShock.Players[e.Who].Group.HasPermission(Permissions.whisper))
-					{
-						text = e.Text.Substring(arr[0].Length + 1);
-					}
-					else if (e.Text.Trim().Length == 1)
-						text = "/";
-                    else
-                        return;
-				}
+				if (e.Text.StartsWith(TShock.Config.CommandSpecifier))
+					return;
 				if ((DateTime.Now - Times[e.Who]).TotalSeconds > Config.Time)
 				{
 					Spams[e.Who] = 0.0;
 					Times[e.Who] = DateTime.Now;
 				}
 
-				Spams[e.Who]++;
-				double uniqueRatio = (double)text.GetUnique() / text.Length;
+				Spams[e.Who] += Config.NormalWeight;
 				if (text.Trim().Length <= Config.ShortLength)
-					Spams[e.Who] += 0.5;
-				else if (uniqueRatio <= 0.20 || uniqueRatio >= 0.80)
-					Spams[e.Who] += 0.5;
-				if (text.UpperCount() >= Config.CapsRatio)
-					Spams[e.Who] += 0.5;
+					Spams[e.Who] += Config.ShortWeight;
+				if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
+					Spams[e.Who] += Config.CapsWeight;
 
 				if (Spams[e.Who] > Config.Threshold && !TShock.Players[e.Who].Group.HasPermission("antispam.ignore"))
 				{
-					switch (Config.Action)
+					switch (Config.Action.ToLower())
 					{
 						case "ignore":
 						default:
 							Times[e.Who] = DateTime.Now;
 							TShock.Players[e.Who].SendErrorMessage("You have been ignored for spamming.");
 							e.Handled = true;
-							break;
+							return;
 						case "kick":
-							TShock.Utils.ForceKick(TShock.Players[e.Who], "Spamming");
+							TShock.Utils.ForceKick(TShock.Players[e.Who], "Spamming", false, true);
 							e.Handled = true;
-							break;
+							return;
 					}
 				}
 			}
@@ -130,6 +112,51 @@ namespace AntiSpam
 		{
 			Spams[e.Who] = 0.0;
 			Times[e.Who] = DateTime.Now;
+		}
+		void OnPlayerCommand(PlayerCommandEventArgs e)
+		{
+			if (!e.Handled)
+			{
+				switch (e.CommandName)
+				{
+					case "me":
+					case "r":
+					case "reply":
+					case "tell":
+					case "w":
+					case "whisper":
+						if ((DateTime.Now - Times[e.Player.Index]).TotalSeconds > Config.Time)
+						{
+							Spams[e.Player.Index] = 0.0;
+							Times[e.Player.Index] = DateTime.Now;
+						}
+
+						string text = String.Join(" ", e.Parameters);
+						Spams[e.Player.Index] += Config.NormalWeight;
+						if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
+							Spams[e.Player.Index] += Config.CapsWeight;
+						if (text.Trim().Length <= Config.ShortLength)
+							Spams[e.Player.Index] += Config.ShortWeight;
+
+						if (Spams[e.Player.Index] > Config.Threshold && !TShock.Players[e.Player.Index].Group.HasPermission("antispam.ignore"))
+						{
+							switch (Config.Action.ToLower())
+							{
+								case "ignore":
+								default:
+									Times[e.Player.Index] = DateTime.Now;
+									TShock.Players[e.Player.Index].SendErrorMessage("You have been ignored for spamming.");
+									e.Handled = true;
+									return;
+								case "kick":
+									TShock.Utils.ForceKick(TShock.Players[e.Player.Index], "Spamming", false, true);
+									e.Handled = true;
+									return;
+							}
+						}
+						return;
+				}
+			}
 		}
 		void OnSendData(SendDataEventArgs e)
 		{

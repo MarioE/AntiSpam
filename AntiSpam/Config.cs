@@ -9,11 +9,16 @@ namespace AntiSpam
 {
 	public class Config
 	{
-		public string Action = "ignore";
-		public double CapsRatio = 0.66;
 		public bool DisableBossMessages = false;
 		public bool DisableOrbMessages = false;
-		public int ShortLength = 6;
+
+		public string Action = "ignore";
+		public double CapsRatio = 0.66;
+		public double CapsWeight = 2.0;
+		public double NormalWeight = 1.0;
+		public int ShortLength = 4;
+		public double ShortWeight = 1.5;
+
 		public double Threshold = 5.0;
 		public int Time = 5;
 
