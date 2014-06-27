@@ -75,11 +75,12 @@ namespace AntiSpam
 					Times[e.Who] = DateTime.Now;
 				}
 
-				Spams[e.Who] += Config.NormalWeight;
 				if (text.Trim().Length <= Config.ShortLength)
 					Spams[e.Who] += Config.ShortWeight;
-				if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
+				else if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
 					Spams[e.Who] += Config.CapsWeight;
+				else
+					Spams[e.Who] += Config.NormalWeight;
 
 				if (Spams[e.Who] > Config.Threshold && !TShock.Players[e.Who].Group.HasPermission("antispam.ignore"))
 				{
@@ -132,11 +133,12 @@ namespace AntiSpam
 						}
 
 						string text = String.Join(" ", e.Parameters);
-						Spams[e.Player.Index] += Config.NormalWeight;
 						if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
 							Spams[e.Player.Index] += Config.CapsWeight;
-						if (text.Trim().Length <= Config.ShortLength)
+						else if (text.Trim().Length <= Config.ShortLength)
 							Spams[e.Player.Index] += Config.ShortWeight;
+						else
+							Spams[e.Player.Index] += Config.NormalWeight;
 
 						if (Spams[e.Player.Index] > Config.Threshold && !TShock.Players[e.Player.Index].Group.HasPermission("antispam.ignore"))
 						{
