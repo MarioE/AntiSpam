@@ -77,7 +77,7 @@ namespace AntiSpam
 
 				if (text.Trim().Length <= Config.ShortLength)
 					Spams[e.Who] += Config.ShortWeight;
-				else if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
+				else if ((double)text.Where(c => Char.IsUpper(c)).Count() / text.Length >= Config.CapsRatio)
 					Spams[e.Who] += Config.CapsWeight;
 				else
 					Spams[e.Who] += Config.NormalWeight;
@@ -116,7 +116,7 @@ namespace AntiSpam
 		}
 		void OnPlayerCommand(PlayerCommandEventArgs e)
 		{
-			if (!e.Handled)
+			if (!e.Handled && e.Player.RealPlayer)
 			{
 				switch (e.CommandName)
 				{
@@ -132,8 +132,8 @@ namespace AntiSpam
 							Times[e.Player.Index] = DateTime.Now;
 						}
 
-						string text = String.Join(" ", e.Parameters);
-						if (text.Where(c => Char.IsUpper(c)).Count() >= Config.CapsRatio)
+						string text = e.CommandText.Substring(e.CommandName.Length);
+						if ((double)text.Where(c => Char.IsUpper(c)).Count() / text.Length >= Config.CapsRatio)
 							Spams[e.Player.Index] += Config.CapsWeight;
 						else if (text.Trim().Length <= Config.ShortLength)
 							Spams[e.Player.Index] += Config.ShortWeight;
