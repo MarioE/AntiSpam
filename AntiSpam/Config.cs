@@ -9,7 +9,8 @@ namespace AntiSpam
 {
 	public class Config
 	{
-		public bool DisableBossMessages = false;
+        public bool DisableBossMessages = false;
+        public bool DisableMobMessages = false;
 		public bool DisableOrbMessages = false;
 
 		public string Action = "ignore";

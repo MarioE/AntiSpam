@@ -21,7 +21,7 @@ namespace AntiSpam
 
 		public override string Author
 		{
-			get { return "MarioE"; }
+            get { return "MarioE + Terrabear"; }
 		}
 		public override string Description
 		{
@@ -86,23 +86,23 @@ namespace AntiSpam
 				{
 					switch (Config.Action.ToLower())
 					{
-						case "ignore":
-						default:
-							Times[e.Who] = DateTime.Now;
-							TShock.Players[e.Who].SendErrorMessage("You have been ignored for spamming.");
-							e.Handled = true;
-							return;
-						case "kick":
-							TShock.Utils.ForceKick(TShock.Players[e.Who], "Spamming", false, true);
-							e.Handled = true;
-							return;
+                        case "ignore":
+                        default:
+                            Times[e.Who] = DateTime.Now;
+                            TShock.Players[e.Who].SendErrorMessage("[AntiSpam] You've been ignored for spamming. Wait 5 seconds to chat again.");
+                            e.Handled = true;
+                            return;
+                        case "kick":
+                            TShock.Utils.ForceKick(TShock.Players[e.Who], "[AntiSpam] You've been kicked for spamming. Do not spam again.", false, true);
+                            e.Handled = true;
+                            return;
 					}
 				}
 			}
 		}
 		void OnInitialize(EventArgs e)
 		{
-			Commands.ChatCommands.Add(new Command("antispam.reload", Reload, "asreload"));
+			Commands.ChatCommands.Add(new Command("antispam.reload", Reload, "asload"));
 
 			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
 			if (File.Exists(path))
@@ -144,16 +144,16 @@ namespace AntiSpam
 						{
 							switch (Config.Action.ToLower())
 							{
-								case "ignore":
-								default:
-									Times[e.Player.Index] = DateTime.Now;
-									TShock.Players[e.Player.Index].SendErrorMessage("You have been ignored for spamming.");
-									e.Handled = true;
-									return;
-								case "kick":
-									TShock.Utils.ForceKick(TShock.Players[e.Player.Index], "Spamming", false, true);
-									e.Handled = true;
-									return;
+                                case "ignore":
+                                default:
+                                    Times[e.Player.Index] = DateTime.Now;
+                                    TShock.Players[e.Player.Index].SendErrorMessage("[AntiSpam] You've been ignored for spamming. Wait 5 seconds to chat.");
+                                    e.Handled = true;
+                                    return;
+                                case "kick":
+                                    TShock.Utils.ForceKick(TShock.Players[e.Player.Index], "[AntiSpam] You've been kicked for spamming. Do not spam again.", false, true);
+                                    e.Handled = true;
+                                    return;
 							}
 						}
 						return;
@@ -176,6 +176,13 @@ namespace AntiSpam
 						e.Handled = true;
 					}
 				}
+                if (Config.DisableMobMessages == true && e.number2 == 0 && e.number3 == 128 && e.number4 == 0)
+                {
+                    if (e.text.Contains("has spawned"))
+                    {
+                        e.Handled = true;
+                    }
+                }
 				if (Config.DisableOrbMessages && e.number2 == 50 && e.number3 == 255 && e.number4 == 130)
 				{
 					if (e.text == "A horrible chill goes down your spine..." ||
