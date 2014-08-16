@@ -21,7 +21,7 @@ namespace AntiSpam
 
 		public override string Author
 		{
-            get { return "MarioE + Terrabear"; }
+			get { return "MarioE + Terrabear"; }
 		}
 		public override string Description
 		{
@@ -29,7 +29,7 @@ namespace AntiSpam
 		}
 		public override string Name
 		{
-			get { return "AntiSpam"; }
+			get { return "AntiSpam+"; }
 		}
 		public override Version Version
 		{
@@ -39,7 +39,7 @@ namespace AntiSpam
 		public AntiSpam(Main game)
 			: base(game)
 		{
-			Order = 1000000;
+			Order = 999999;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -86,16 +86,16 @@ namespace AntiSpam
 				{
 					switch (Config.Action.ToLower())
 					{
-                        case "ignore":
-                        default:
-                            Times[e.Who] = DateTime.Now;
-                            TShock.Players[e.Who].SendErrorMessage("[AntiSpam] You've been ignored for spamming. Wait 5 seconds to chat again.");
-                            e.Handled = true;
-                            return;
-                        case "kick":
+						case "ignore":
+						default:
+							Times[e.Who] = DateTime.Now;
+							TShock.Players[e.Who].SendErrorMessage("[AntiSpam] You've been ignored for spamming. Wait 5 seconds to chat again.");
+							e.Handled = true;
+							return;
+						case "kick":
                             TShock.Utils.ForceKick(TShock.Players[e.Who], "[AntiSpam] You've been kicked for spamming. Do not spam again.", false, true);
-                            e.Handled = true;
-                            return;
+							e.Handled = true;
+							return;
 					}
 				}
 			}
@@ -144,16 +144,16 @@ namespace AntiSpam
 						{
 							switch (Config.Action.ToLower())
 							{
-                                case "ignore":
-                                default:
-                                    Times[e.Player.Index] = DateTime.Now;
+								case "ignore":
+								default:
+									Times[e.Player.Index] = DateTime.Now;
                                     TShock.Players[e.Player.Index].SendErrorMessage("[AntiSpam] You've been ignored for spamming. Wait 5 seconds to chat.");
-                                    e.Handled = true;
-                                    return;
-                                case "kick":
+									e.Handled = true;
+									return;
+								case "kick":
                                     TShock.Utils.ForceKick(TShock.Players[e.Player.Index], "[AntiSpam] You've been kicked for spamming. Do not spam again.", false, true);
-                                    e.Handled = true;
-                                    return;
+									e.Handled = true;
+									return;
 							}
 						}
 						return;
@@ -164,7 +164,7 @@ namespace AntiSpam
 		{
 			if (e.MsgId == PacketTypes.ChatText && !e.Handled)
 			{
-				if (Config.DisableBossMessages && e.number2 == 175 && e.number3 == 75 && e.number4 == 255)
+                if (Config.DisableBossMessages == true && e.number2 == 175 && e.number3 == 75 && e.number4 == 255)
 				{
 					if (e.text.StartsWith("Eye of Cthulhu") || e.text.StartsWith("Eater of Worlds") ||
 						e.text.StartsWith("Skeletron") || e.text.StartsWith("King Slime") ||
@@ -183,7 +183,21 @@ namespace AntiSpam
                         e.Handled = true;
                     }
                 }
-				if (Config.DisableOrbMessages && e.number2 == 50 && e.number3 == 255 && e.number4 == 130)
+                if (Config.DisableNPCMessages == true && e.number2 == 255 && e.number3 == 0 && e.number4 == 0)
+                {
+                    if (e.text.Contains("was slain") || e.text.Contains("has left!"))
+                    {
+                        e.Handled = true;
+                    }
+                }
+                if (Config.DisablePVPMessages == true && e.number2 == 255 && e.number3 == 255 && e.number4 == 255)
+                {
+                    if (e.text.Contains("has enabled PvP!") || e.text.Contains("has disabled PvP!"))
+                    {
+                        e.Handled = true;
+                    }
+                }
+                if (Config.DisableOrbMessages == true && e.number2 == 50 && e.number3 == 255 && e.number4 == 130)
 				{
 					if (e.text == "A horrible chill goes down your spine..." ||
 						e.text == "Screams echo around you...")
