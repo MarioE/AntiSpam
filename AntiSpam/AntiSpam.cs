@@ -12,7 +12,7 @@ using TShockAPI.Hooks;
 
 namespace AntiSpam
 {
-	[ApiVersion(1, 16)]
+	[ApiVersion(1, 17)]
 	public class AntiSpam : TerrariaPlugin
 	{
 		Config Config = new Config();
@@ -67,7 +67,7 @@ namespace AntiSpam
 			if (!e.Handled)
 			{
 				string text = e.Text;
-				if (e.Text.StartsWith(TShock.Config.CommandSpecifier))
+				if (e.Text.StartsWith(Commands.Specifier) || e.Text.StartsWith(Commands.SilentSpecifier))
 					return;
 				if ((DateTime.Now - Times[e.Who]).TotalSeconds > Config.Time)
 				{
