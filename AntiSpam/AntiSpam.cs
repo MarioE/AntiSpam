@@ -12,7 +12,7 @@ using TShockAPI.Hooks;
 
 namespace AntiSpam
 {
-	[ApiVersion(1, 17)]
+	[ApiVersion(1, 25)]
 	public class AntiSpam : TerrariaPlugin
 	{
 		Config Config = new Config();
@@ -171,7 +171,8 @@ namespace AntiSpam
 						e.text.StartsWith("The Destroyer") || e.text.StartsWith("The Twins") ||
 						e.text.StartsWith("Skeletron Prime") || e.text.StartsWith("Wall of Flesh") ||
 						e.text.StartsWith("Plantera") || e.text.StartsWith("Golem") || e.text.StartsWith("Brain of Cthulhu") ||
-						e.text.StartsWith("Queen Bee") || e.text.StartsWith("Duke Fishron"))
+						e.text.StartsWith("Queen Bee") || e.text.StartsWith("Duke Fishron") ||
+						e.text.StartsWith("Moon Lord"))
 					{
 						e.Handled = true;
 					}
