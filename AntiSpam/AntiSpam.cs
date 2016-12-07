@@ -12,7 +12,7 @@ using TShockAPI.Hooks;
 
 namespace AntiSpam
 {
-	[ApiVersion(1, 25)]
+	[ApiVersion(1, 26)]
 	public class AntiSpam : TerrariaPlugin
 	{
 		Config Config = new Config();
