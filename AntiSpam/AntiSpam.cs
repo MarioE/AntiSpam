@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿/*
+ * Original plugin by MarioE
+ */
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -21,7 +22,7 @@ namespace AntiSpam
 
 		public override string Author
 		{
-			get { return "MarioE"; }
+			get { return "Zaicon"; }
 		}
 		public override string Description
 		{
@@ -51,6 +52,7 @@ namespace AntiSpam
 				ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
 				ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
 				PlayerHooks.PlayerCommand -= OnPlayerCommand;
+				GeneralHooks.ReloadEvent -= Reload;
 			}
 		}
 		public override void Initialize()
@@ -60,6 +62,7 @@ namespace AntiSpam
 			ServerApi.Hooks.ServerChat.Register(this, OnChat);
 			ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
 			PlayerHooks.PlayerCommand += OnPlayerCommand;
+			GeneralHooks.ReloadEvent += Reload;
 		}
 
 		void OnChat(ServerChatEventArgs e)
@@ -82,7 +85,7 @@ namespace AntiSpam
 				else
 					Spams[e.Who] += Config.NormalWeight;
 
-				if (Spams[e.Who] > Config.Threshold && !TShock.Players[e.Who].Group.HasPermission("antispam.ignore"))
+				if (Spams[e.Who] > Config.Threshold && !TShock.Players[e.Who].HasPermission("antispam.ignore"))
 				{
 					switch (Config.Action.ToLower())
 					{
@@ -102,8 +105,6 @@ namespace AntiSpam
 		}
 		void OnInitialize(EventArgs e)
 		{
-			Commands.ChatCommands.Add(new Command("antispam.reload", Reload, "asreload"));
-
 			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
 			if (File.Exists(path))
 				Config = Config.Read(path);
@@ -140,7 +141,7 @@ namespace AntiSpam
 						else
 							Spams[e.Player.Index] += Config.NormalWeight;
 
-						if (Spams[e.Player.Index] > Config.Threshold && !TShock.Players[e.Player.Index].Group.HasPermission("antispam.ignore"))
+						if (Spams[e.Player.Index] > Config.Threshold && !TShock.Players[e.Player.Index].HasPermission("antispam.ignore"))
 						{
 							switch (Config.Action.ToLower())
 							{
@@ -188,7 +189,7 @@ namespace AntiSpam
 			}
 		}
 
-		void Reload(CommandArgs e)
+		void Reload(ReloadEventArgs e)
 		{
 			string path = Path.Combine(TShock.SavePath, "antispamconfig.json");
 			if (File.Exists(path))
